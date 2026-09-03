@@ -1,0 +1,18 @@
+# Config for open-clipboard-links.
+# Copy this file to config.sh and customize. config.sh is gitignored.
+
+# Apps that, when frontmost at copy time, should suppress auto-opening.
+IGNORED_APPS=("Google Chrome" "Slack" "Safari")
+
+# How often to poll the clipboard, in seconds.
+POLL_INTERVAL=0.25
+
+# github.com links open in this browser...
+GITHUB_BROWSER="Safari"
+# ...unless the URL matches one of these path prefixes (e.g. an org you
+# don't want auto-opened in your personal browser), in which case it falls
+# back to DEFAULT_BROWSER instead.
+GITHUB_EXCLUDE_PREFIXES=("github.com/Some-Org")
+
+# Everything else (and github.com exclusions above) opens in this browser.
+DEFAULT_BROWSER="Google Chrome"

@@ -1,0 +1,69 @@
+#!/bin/bash
+set -euo pipefail
+
+LABEL="com.cosmicbuffalo.open-clipboard-links"
+PLIST_DEST="$HOME/Library/LaunchAgents/${LABEL}.plist"
+LOG_DIR="$HOME/Library/Logs"
+UID_NUM=$(id -u)
+DOMAIN="gui/${UID_NUM}"
+
+usage() {
+  cat <<EOF
+Usage: open-clipboard-links <command>
+
+Commands:
+  start     Load and start the background daemon (auto-starts on login too)
+  stop      Unload and stop the background daemon
+  restart   Restart the daemon (picks up script changes)
+  status    Show whether the daemon is running
+  logs      Tail the daemon's stdout/stderr logs
+  help      Show this usage message
+EOF
+}
+
+require_plist() {
+  if [[ ! -f "$PLIST_DEST" ]]; then
+    echo "Error: $PLIST_DEST not found. Run install.sh first." >&2
+    exit 1
+  fi
+}
+
+cmd_start() {
+  require_plist
+  launchctl bootstrap "$DOMAIN" "$PLIST_DEST" 2>/dev/null || true
+  launchctl kickstart -k "$DOMAIN/$LABEL"
+  echo "Started $LABEL"
+}
+
+cmd_stop() {
+  launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || echo "Already stopped."
+  echo "Stopped $LABEL"
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
+    launchctl print "$DOMAIN/$LABEL" | grep -E "state|pid"
+  else
+    echo "$LABEL is not loaded."
+  fi
+}
+
+cmd_logs() {
+  tail -f "$LOG_DIR/open-clipboard-links.log" "$LOG_DIR/open-clipboard-links.err.log"
+}
+
+case "${1:-}" in
+  start) cmd_start ;;
+  stop) cmd_stop ;;
+  restart) cmd_restart ;;
+  status) cmd_status ;;
+  logs) cmd_logs ;;
+  -h|--help|help) usage; exit 0 ;;
+  "") usage >&2; exit 1 ;;
+  *) echo "Unknown command: $1" >&2; usage >&2; exit 1 ;;
+esac

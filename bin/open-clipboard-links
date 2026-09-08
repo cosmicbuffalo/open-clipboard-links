@@ -46,10 +46,20 @@ cmd_restart() {
 }
 
 cmd_status() {
-  if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
-    launchctl print "$DOMAIN/$LABEL" | grep -E "state|pid"
+  local info
+  if ! info=$(launchctl print "$DOMAIN/$LABEL" 2>/dev/null); then
+    echo "not running"
+    return
+  fi
+
+  local state pid
+  state=$(awk -F'= ' '/^\tstate = /{print $2; exit}' <<< "$info")
+  pid=$(awk -F'= ' '/^\tpid = /{print $2; exit}' <<< "$info")
+
+  if [[ "$state" == "running" ]]; then
+    echo "running (pid $pid)"
   else
-    echo "$LABEL is not loaded."
+    echo "loaded but not running (state: $state)"
   fi
 }
 

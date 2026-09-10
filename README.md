@@ -28,7 +28,8 @@ on your `PATH`). It also creates config at
 
 Personal/environment-specific behavior lives in
 `${XDG_CONFIG_HOME:-~/.config}/open-clipboard-links/config.sh` (not part of
-this repo). Edit it directly, or re-copy from `config.sh.example`:
+this repo). Run `open-clipboard-links config` to edit it in `$EDITOR` — it
+seeds the file from `config.sh.example` first if it doesn't exist yet.
 
 - `IGNORED_APPS` — apps that suppress auto-opening when frontmost at copy time
 - `POLL_INTERVAL` — clipboard poll interval in seconds
@@ -47,6 +48,7 @@ open-clipboard-links stop      # stop the daemon
 open-clipboard-links restart   # restart (e.g. after editing the script)
 open-clipboard-links status    # check whether it's running
 open-clipboard-links logs      # tail stdout/stderr logs
+open-clipboard-links config    # edit config.sh in $EDITOR
 open-clipboard-links help      # show usage
 ```
 

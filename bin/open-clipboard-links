@@ -6,6 +6,15 @@ PLIST_DEST="$HOME/Library/LaunchAgents/${LABEL}.plist"
 LOG_DIR="$HOME/Library/Logs"
 UID_NUM=$(id -u)
 DOMAIN="gui/${UID_NUM}"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/open-clipboard-links"
+CONFIG_PATH="$CONFIG_DIR/config.sh"
+
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_SOURCE" ]]; do
+  SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+done
+PROJECT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")/.." && pwd)"
+CONFIG_EXAMPLE_PATH="$PROJECT_DIR/config.sh.example"
 
 usage() {
   cat <<EOF
@@ -17,6 +26,7 @@ Commands:
   restart   Restart the daemon (picks up script changes)
   status    Show whether the daemon is running
   logs      Tail the daemon's stdout/stderr logs
+  config    Open the config file in \$EDITOR (seeding it from the example if missing)
   help      Show this usage message
 EOF
 }
@@ -67,12 +77,27 @@ cmd_logs() {
   tail -f "$LOG_DIR/open-clipboard-links.log" "$LOG_DIR/open-clipboard-links.err.log"
 }
 
+cmd_config() {
+  if [[ ! -f "$CONFIG_PATH" ]]; then
+    if [[ ! -f "$CONFIG_EXAMPLE_PATH" ]]; then
+      echo "Error: no config at $CONFIG_PATH and no example at $CONFIG_EXAMPLE_PATH to seed from." >&2
+      exit 1
+    fi
+    mkdir -p "$CONFIG_DIR"
+    cp "$CONFIG_EXAMPLE_PATH" "$CONFIG_PATH"
+    echo "Seeded $CONFIG_PATH from config.sh.example"
+  fi
+
+  "${EDITOR:-vi}" "$CONFIG_PATH"
+}
+
 case "${1:-}" in
   start) cmd_start ;;
   stop) cmd_stop ;;
   restart) cmd_restart ;;
   status) cmd_status ;;
   logs) cmd_logs ;;
+  config) cmd_config ;;
   -h|--help|help) usage; exit 0 ;;
   "") usage >&2; exit 1 ;;
   *) echo "Unknown command: $1" >&2; usage >&2; exit 1 ;;

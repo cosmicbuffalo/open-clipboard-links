@@ -24,6 +24,25 @@ on your `PATH`). It also creates config at
 `${XDG_CONFIG_HOME:-~/.config}/open-clipboard-links/config.sh` from
 `config.sh.example` if it doesn't already exist.
 
+## Updating
+
+Re-run the same install command you used originally:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/cosmicbuffalo/open-clipboard-links/main/bootstrap.sh | bash
+```
+
+or, from an existing clone:
+
+```sh
+git -C ~/open-clipboard-links pull --ff-only
+~/open-clipboard-links/install.sh
+```
+
+`install.sh` reinstalls the plist and CLI symlink, and automatically restarts
+the daemon if it was already running so the update takes effect immediately.
+It never touches your existing `config.sh`.
+
 ## Config
 
 Personal/environment-specific behavior lives in
